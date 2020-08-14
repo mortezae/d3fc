@@ -252,9 +252,9 @@ Constructs a new Cartesian chart with the given scales.
 
 Constructs a new Cartesian chart with the given scales and axis components.
 
-If *xAxis* is specified, it must be an object with the required x-axis factory function (*left* if *yOrient*="left" or *right* if *yOrient*="right").
+If *xAxis* is specified, it must be an object with the required x-axis factory function (*top* if *xOrient*="top" or *bottom* if *xOrient*="bottom").
 
-If *yAxis* is specified, it must be an object with the required y-axis factory function (*top* if *xOrient*="top" or *bottom* if *xOrient*="bottom").
+If *yAxis* is specified, it must be an object with the required y-axis factory function (*left* if *yOrient*="left" or *right* if *yOrient*="right").
 
 <a name="cartesian_svgPlotArea" href="#cartesian_svgPlotArea">#</a> *cartesian*.**svgPlotArea**(*component*)
 <a name="cartesian_canvasPlotArea" href="#cartesian_canvasPlotArea">#</a> *cartesian*.**canvasPlotArea**(*component*)
@@ -265,6 +265,10 @@ If *component* is specified, sets the component to render onto the SVG/canvas, a
 If *canvasPlotArea* or *webglPlotArea* is used, the relavent *context* is automatically applied to the chart.
 
 For series that contain a very high number of data-points, rendering to canvas can reduce the rendering time and improve performance. For components that require user-interaction, rendering to SVG can simplify their implementation.
+
+<a name="cartesian_useDevicePixelRatio" href="#cartesian_useDevicePixelRatio">#</a> *cartesian*.**useDevicePixelRatio**(*value*)
+
+If the boolean *value* is specified, sets whether the Canvas / WebGL should be scaled based on the resolution of the display device, and returns the Cartesian chart. If *value* is not specified, returns the current value.
 
 <a name="cartesian_chartLabel" href="#cartesian_chartLabel">#</a> *cartesian*.**chartLabel**(*label*)
 <a name="cartesian_xLabel" href="#cartesian_xLabel">#</a> *cartesian*.**xLabel**(*label*)

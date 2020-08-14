@@ -23,6 +23,7 @@ export default (...args) => {
     let canvasPlotArea = null;
     let svgPlotArea = null;
     let isContextLost = false;
+    let useDevicePixelRatio = true;
     let xAxisStore = store('tickFormat', 'ticks', 'tickArguments', 'tickSize', 'tickSizeInner', 'tickSizeOuter', 'tickValues', 'tickPadding', 'tickCenterLabel');
     let xDecorate = () => { };
     let yAxisStore = store('tickFormat', 'ticks', 'tickArguments', 'tickSize', 'tickSizeInner', 'tickSizeOuter', 'tickValues', 'tickPadding', 'tickCenterLabel');
@@ -73,11 +74,11 @@ export default (...args) => {
             webglDataJoin(container, webglPlotArea ? [data] : [])
                 .attr('set-webgl-viewport','')
                 .classed('plot-area', true)
-                .on('draw', (d, i, nodes) => {
-                    const canvas = select(nodes[i])
-                        .select('canvas')
-                        .node();
-                    webglPlotArea.context(isContextLost ? null : canvas.getContext('webgl'))
+                .attr('use-device-pixel-ratio', useDevicePixelRatio)
+                .on('draw', (d) => {
+                    const { child, pixelRatio } = event.detail;
+                    webglPlotArea.context(isContextLost ? null : child.getContext('webgl'))
+                        .pixelRatio(pixelRatio)
                         .xScale(xScale)
                         .yScale(yScale);
                     webglPlotArea(d);
@@ -98,63 +99,66 @@ export default (...args) => {
 
             canvasDataJoin(container, canvasPlotArea ? [data] : [])
                 .classed('plot-area', true)
-                .on('draw', (d, i, nodes) => {
-                    const canvas = select(nodes[i])
-                        .select('canvas')
-                        .node();
-                    canvasPlotArea.context(canvas.getContext('2d'))
+                .attr('use-device-pixel-ratio', useDevicePixelRatio)
+                .on('draw', (d) => {
+                    const { child, pixelRatio } = event.detail;
+                    const context = child.getContext('2d');
+                    context.save();
+                    if (useDevicePixelRatio) {
+                        context.scale(pixelRatio, pixelRatio);
+                    }
+                    canvasPlotArea.context(context)
                         .xScale(xScale)
                         .yScale(yScale);
                     canvasPlotArea(d);
+                    context.restore();
                 });
 
             svgDataJoin(container, svgPlotArea ? [data] : [])
                 .classed('plot-area', true)
                 .on('draw', (d, i, nodes) => {
+                    const { child } = event.detail;
                     svgPlotArea.xScale(xScale)
                         .yScale(yScale);
-                    transitionPropagator(select(nodes[i]))
-                        .select('svg')
+                    transitionPropagator(select(child).datum(d))
                         .call(svgPlotArea);
                 });
 
             xAxisDataJoin(container, [xOrient(data)])
                 .attr('class', d => `x-axis ${d}-axis`)
                 .style('height', xAxisHeight(data))
-                .on('measure', (d, i, nodes) => {
-                    const { width, height } = event.detail;
+                .on('measure', (d) => {
+                    const { width, height, child } = event.detail;
                     if (d === 'top') {
-                        select(nodes[i])
-                            .select('svg')
+                        select(child)
                             .attr('viewBox', `0 ${-height} ${width} ${height}`);
                     }
                     xScale.range([0, width]);
                 })
-                .on('draw', (d, i, nodes) => {
+                .on('draw', (d) => {
+                    const { child } = event.detail;
                     const xAxisComponent = d === 'top' ? xAxis.top(xScale) : xAxis.bottom(xScale);
                     xAxisComponent.decorate(xDecorate);
-                    transitionPropagator(select(nodes[i]))
-                        .select('svg')
+                    transitionPropagator(select(child).datum(d))
                         .call(xAxisStore(xAxisComponent));
                 });
 
             yAxisDataJoin(container, [yOrient(data)])
                 .attr('class', d => `y-axis ${d}-axis`)
                 .style('width', yAxisWidth(data))
-                .on('measure', (d, i, nodes) => {
-                    const { width, height } = event.detail;
+                .on('measure', (d) => {
+                    const { width, height, child } = event.detail;
                     if (d === 'left') {
-                        select(nodes[i])
-                            .select('svg')
+                        select(child)
                             .attr('viewBox', `${-width} 0 ${width} ${height}`);
                     }
                     yScale.range([height, 0]);
                 })
-                .on('draw', (d, i, nodes) => {
+                .on('draw', (d) => {
+                    const { child } = event.detail;
                     const yAxisComponent = d === 'left' ? yAxis.left(yScale) : yAxis.right(yScale);
                     yAxisComponent.decorate(yDecorate);
-                    transitionPropagator(select(nodes[i]))
-                        .select('svg')
+                    transitionPropagator(select(child).datum(d))
                         .call(yAxisStore(yAxisComponent));
                 });
 
@@ -262,6 +266,13 @@ export default (...args) => {
             return decorate;
         }
         decorate = args[0];
+        return cartesian;
+    };
+    cartesian.useDevicePixelRatio = (...args) => {
+        if (!args.length) {
+            return useDevicePixelRatio;
+        }
+        useDevicePixelRatio = args[0];
         return cartesian;
     };
 

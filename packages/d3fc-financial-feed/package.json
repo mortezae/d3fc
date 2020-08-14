@@ -1,6 +1,6 @@
 {
   "name": "@d3fc/d3fc-financial-feed",
-  "version": "7.0.0",
+  "version": "7.0.1",
   "description": "An API for fetching financial time-series data from different sources including GDAX",
   "license": "MIT",
   "keywords": [
@@ -21,7 +21,6 @@
   },
   "scripts": {
     "bundle": "npx rollup -c ../../scripts/rollup.config.js",
-    "test": " npx jasmine --config=../../scripts/jasmine.json",
     "start": "npm start  --prefix ../d3fc -- --configPkg=d3fc-financial-feed"
   },
   "peerDependencies": {
